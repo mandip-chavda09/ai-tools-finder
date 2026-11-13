@@ -6,6 +6,7 @@ from flask import Flask, session, request, render_template, redirect, url_for, f
 from pymongo import MongoClient, ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 from werkzeug.security import generate_password_hash, check_password_hash
+import certifi
 
 app = Flask(__name__)
 app.secret_key = os.getenv("FLASK_SECRET_KEY")
@@ -17,7 +18,12 @@ if not MONGO_URI:
     raise RuntimeError("Set the MONGO_URI environment variable.")
 
 # Reuse the client between serverless invocations where possible.
-client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=10000)
+client = MongoClient(
+    MONGO_URI,
+    tls=True,
+    tlsCAFile=certifi.where(),
+    serverSelectionTimeoutMS=20000
+)
 db = client["ai_tools_db"]
 tools_collection = db["ai_tools"]
 users_collection = db["users"]
